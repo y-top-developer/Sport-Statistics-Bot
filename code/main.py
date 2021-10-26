@@ -4,6 +4,7 @@ import telebot
 import datetime
 import matplotlib
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 
 
@@ -123,27 +124,32 @@ def stats(message):
         return
 
     events['event_created_at'] = events['event_created_at'].apply(
-        lambda x: (x + datetime.timedelta(hours=3)).date())
+    lambda x: (x + datetime.timedelta(hours=3)).date())
     events['record_sum'] = events['record'].apply(
         lambda x: sum(list(map(int, x.split('-')))))
     df_groupby = events.groupby(['user_name', 'event_created_at']).sum()
     template = {datetime.datetime.now().date(
-    ) - datetime.timedelta(days=i): 0 for i in range(0, 4)}
+    ) - datetime.timedelta(days=i): 0 for i in range(3, -1, -1)}
     result = {name: template.copy()
-              for (name, _) in df_groupby.record_sum.keys()}
+                for (name, _) in df_groupby.record_sum.keys()}
     for (name, date), record_sum in df_groupby.record_sum.items():
         if date in template:
             result[name][date] = record_sum
+    result_ = {'name': [], 'date': [], 'sum': []}
+    for name, values in result.items():
+        for date, sum_ in values.items():
+            result_['name'].append(name)
+            result_['date'].append(date.strftime('%d-%m-%y'))
+            result_['sum'].append(sum_)
 
     plt.figure(figsize=(20, 10))
-    plt.title(sport_name)
-    for user, values in result.items():
-        values = dict(sorted(values.items()))
-        plt.plot(list(values.keys()), list(values.values()), label=user)
+    sns.set_theme(style="darkgrid")
 
-    plt.xticks(list(template.keys()))
-    plt.yticks(list(range(max(events['record_sum'] + 3))))
+    result_df = pd.DataFrame(result_)
 
+    sns.lineplot(x="date", y="sum", hue="name", data=result_df)
+    for name, date, sum_ in result_df.values:
+        plt.annotate(sum_, (date, sum_))
     plt.legend()
     plt.savefig('plot_name.png')
     bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
