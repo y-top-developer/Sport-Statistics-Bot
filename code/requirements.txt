@@ -1,0 +1,4 @@
+matplotlib==3.4.3
+pandas==1.3.4
+pyTelegramBotAPI==4.1.1
+SQLAlchemy==1.4.26

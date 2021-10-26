@@ -1,0 +1,10 @@
+version: "3"
+services:
+  telegram_sport_bot:
+    container_name: telegram_sport_bot
+    build: .
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ${PWD}/data/:/app/data
