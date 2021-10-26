@@ -143,6 +143,7 @@ def stats(message):
             result_['sum'].append(sum_)
 
     plt.figure(figsize=(20, 10))
+    plt.title(sport_name)
     sns.set_theme(style="darkgrid")
 
     result_df = pd.DataFrame(result_)
