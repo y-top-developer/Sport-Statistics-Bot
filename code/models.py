@@ -13,7 +13,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     chat_id = Column(Integer)
-    telegram_id = Column(Integer, unique=True, index=True)
+    telegram_id = Column(Integer)
     username = Column(String(255))
     first_name = Column(String(255))
     last_name = Column(String(255))
@@ -30,7 +30,7 @@ class Sport(Base):
 
     id = Column(Integer, primary_key=True)
     chat_id = Column(Integer)
-    title = Column(String(255), unique=True, index=True)
+    title = Column(String(255))
     is_active = Column(Boolean, default=True)
     created_at = Column(DateTime, server_default=func.now())
 
