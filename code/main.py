@@ -9,8 +9,9 @@ import matplotlib.pyplot as plt
 
 
 from models import Event, Sport, new_session, User
-from orm import create_sport, create_user, get_all_users, get_sport, get_user, add_event, get_events_by_sport
-from settings import TELEGRAM_TOKEN, ADMINS, RECORD_FORMAT
+from orm import create_sport, get_all_users, get_sport, get_user, add_event, get_events_by_sport
+from messages import create_user, events_to_df
+from settings import TELEGRAM_TOKEN, RECORD_FORMAT
 
 matplotlib.pyplot.switch_backend('Agg')
 
@@ -19,31 +20,16 @@ session = new_session()
 re_record = re.compile(RECORD_FORMAT)
 
 
-@bot.message_handler(commands=['reg_me'])
-def register_user(message):
-    if message.from_user.username in ADMINS:
-        create_user(session, User(
-            chat_id=message.chat.id,
-            telegram_id=message.from_user.id,
-            username=message.from_user.username,
-            first_name=message.from_user.first_name,
-            last_name=message.from_user.last_name,
-            is_admin=True
-        ))
-    else:
-        bot.send_message(
-            message.chat.id, f'[-] {message.from_user.username} is not in the sudoers file. This incident will be reported')
-
-
 @bot.message_handler(commands=['reg_sport'])
 def register_activity_(message):
+
     message_text = message.text.split()[1:]
 
     if len(message_text) != 1:
         bot.send_message(message.chat.id, '[-] /reg_sport sport_name')
         return
 
-    user = get_user(session, message.from_user.id, message.chat.id)
+    user = create_user(session, message)
     if not user or not user.is_admin:
         bot.send_message(
             message.chat.id, f'[-] {message.from_user.username} is not in the sudoers file. This incident will be reported')
@@ -83,13 +69,7 @@ def add_event_(message):
             message.chat.id, f'[-] \'{result}\' does not match by {RECORD_FORMAT}')
         return
 
-    user = create_user(session, User(
-        chat_id=message.chat.id,
-        telegram_id=message.from_user.id,
-        username=message.from_user.username,
-        first_name=message.from_user.first_name,
-        last_name=message.from_user.last_name
-    ))
+    user = create_user(session, message)
 
     event = add_event(session, Event(
         user_id=user.id,
@@ -100,6 +80,29 @@ def add_event_(message):
     if not event:
         bot.send_message(message.chat.id, f'[-] event does not created')
         return
+
+    events = pd.DataFrame(get_events_by_sport(session, sport), columns=[
+                          'user_name', 'event_created_at', 'record'])
+    events_ = events.copy()
+    events_['event_created_at'] = events_['event_created_at'].apply(
+        lambda x: (x + datetime.timedelta(hours=3)).date())
+    
+    if set(events_.user_name) == set(events_.loc[events_['event_created_at'] == datetime.datetime.now().date()].user_name):
+        result_df = events_to_df(events)
+
+        plt.figure(figsize=(20, 10))
+        plt.title(sport_name)
+        sns.set_theme(style="darkgrid")
+        sns.lineplot(x="date", y="sum", hue="name", data=result_df)
+        for name, date, sum_ in result_df.values:
+            plt.annotate(sum_, (date, sum_))
+        plt.legend()
+        plt.savefig('plot_name.png')
+        bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
+        os.remove('plot_name.png')
+        plt.clf()
+        plt.cla()
+        plt.close()
 
 
 @bot.message_handler(commands=['stats'])
@@ -123,31 +126,11 @@ def stats(message):
         bot.send_message(message.chat.id, f'[-] {sport_name} has not events')
         return
 
-    events['event_created_at'] = events['event_created_at'].apply(
-    lambda x: (x + datetime.timedelta(hours=3)).date())
-    events['record_sum'] = events['record'].apply(
-        lambda x: sum(list(map(int, x.split('-')))))
-    df_groupby = events.groupby(['user_name', 'event_created_at']).sum()
-    template = {datetime.datetime.now().date(
-    ) - datetime.timedelta(days=i): 0 for i in range(3, -1, -1)}
-    result = {name: template.copy()
-                for (name, _) in df_groupby.record_sum.keys()}
-    for (name, date), record_sum in df_groupby.record_sum.items():
-        if date in template:
-            result[name][date] = record_sum
-    result_ = {'name': [], 'date': [], 'sum': []}
-    for name, values in result.items():
-        for date, sum_ in values.items():
-            result_['name'].append(name)
-            result_['date'].append(date.strftime('%d-%m-%y'))
-            result_['sum'].append(sum_)
+    result_df = events_to_df(events)
 
     plt.figure(figsize=(20, 10))
     plt.title(sport_name)
     sns.set_theme(style="darkgrid")
-
-    result_df = pd.DataFrame(result_)
-
     sns.lineplot(x="date", y="sum", hue="name", data=result_df)
     for name, date, sum_ in result_df.values:
         plt.annotate(sum_, (date, sum_))
