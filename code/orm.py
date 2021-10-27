@@ -30,6 +30,16 @@ def get_sport(session: Session, title: str, chat_id: int) -> Sport:
         .first()
     )
 
+def get_sports(session: Session, chat_id: int) -> List:
+    return (
+        session.query(
+            Sport.title
+        )
+        .filter(
+            Sport.chat_id == chat_id
+        )
+        .all()
+    )
 
 def get_all_users(session: Session, chat_id: int) -> List:
     return (

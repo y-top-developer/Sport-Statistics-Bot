@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 
 from models import Event, Sport, new_session, User
-from orm import create_sport, get_all_users, get_sport, get_user, add_event, get_events_by_sport
+from orm import create_sport, get_all_users, get_sport, get_user, add_event, get_events_by_sport, get_sports
 from messages import create_user, events_to_df
 from settings import TELEGRAM_TOKEN, RECORD_FORMAT
 
@@ -19,6 +19,24 @@ bot = telebot.TeleBot(TELEGRAM_TOKEN)
 session = new_session()
 re_record = re.compile(RECORD_FORMAT)
 
+@bot.message_handler(commands=['help'])
+def help_(message):
+    bot.send_message(message.chat.id, '''Hi, glad to see you!) 
+I\'m a bot that allows you to track sports achievements in the chat
+
+/reg_sport sport_name - add new sport [admin only/private chat]
+/add record - add new entry for existing sport
+/list - get a list of all sports
+''')
+
+@bot.message_handler(commands=['list'])
+def list_(message):
+    sports = get_sports(session, message.chat.id)
+    if sports:
+        sports = '\n'.join([f'- {i[0]}' for i in sports])
+        bot.send_message(message.chat.id, sports)
+    else:
+        bot.send_message(message.chat.id, '[-] nothing found')
 
 @bot.message_handler(commands=['reg_sport'])
 def register_activity_(message):
