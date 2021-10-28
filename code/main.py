@@ -19,7 +19,7 @@ bot = telebot.TeleBot(TELEGRAM_TOKEN)
 session = new_session()
 re_record = re.compile(RECORD_FORMAT)
 
-@bot.message_handler(commands=['help'])
+@bot.message_handler(commands=['help', 'start'])
 def help_(message):
     bot.send_message(message.chat.id, '''Hi, glad to see you!) 
 I\'m a bot that allows you to track sports achievements in the chat
@@ -50,7 +50,7 @@ def register_activity_(message):
 
     user = create_user(session, message)
     user_info = bot.get_chat_member(message.chat.id, message.from_user.id)
-    if (not user or not user.is_admin) or not (message.chat.type != 'private' and user_info.status in ['creator', 'administrator']):
+    if (not user or not (user.is_admin or user_info.status in ['creator', 'administrator'])):
         bot.send_message(
             message.chat.id, f'[-] {message.from_user.username} is not in the sudoers file. This incident will be reported')
         return
