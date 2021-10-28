@@ -49,7 +49,8 @@ def register_activity_(message):
         return
 
     user = create_user(session, message)
-    if not user or not user.is_admin:
+    user_info = bot.get_chat_member(message.chat.id, message.from_user.id)
+    if (not user or not user.is_admin) or (message.chat.type != 'private' and user_info.status not in ['creator', 'administrator']):
         bot.send_message(
             message.chat.id, f'[-] {message.from_user.username} is not in the sudoers file. This incident will be reported')
         return
