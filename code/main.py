@@ -25,7 +25,7 @@ def help_(message):
 I\'m a bot that allows you to track sports achievements in the chat
 
 /reg_sport sport_name - add new sport [admin only/private chat]
-/add record - add new entry for existing sport
+/add sport_name record - add new entry for existing sport
 /stats sport_name - get a plot for the last 4 days
 /list - get a list of all sports
 ''')
