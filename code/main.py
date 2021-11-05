@@ -107,7 +107,7 @@ def add_event_(message):
     events_['event_created_at'] = events_['event_created_at'].apply(
         lambda x: (x + datetime.timedelta(hours=3)).date())
     
-    if set(events_.user_name) == set(events_.loc[events_['event_created_at'] == datetime.datetime.now().date()].user_name):
+    if set(events_.user_name) == set(events_.loc[events_['event_created_at'] == datetime.datetime.now().date()].user_name) and len(set(events_.user_name)) > 3:
         result_df = events_to_df(events)
 
         plt.figure(figsize=(20, 10))
