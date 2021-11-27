@@ -42,3 +42,27 @@ def events_to_df(events):
             result_['sum'].append(sum_)
 
     return pd.DataFrame(result_)
+
+def get_all_stats(session, chat_id):
+    all_data = pd.DataFrame(orm.get_all_by_last_30_days(session, chat_id), columns=['user_name', 'sport_title', 'event_created_at', 'record'])
+    current_monday = (datetime.datetime.now() - datetime.timedelta(days = datetime.datetime.now().weekday())).date()
+    sports = {}
+    for sport_title, sport_data in all_data.groupby('sport_title'):
+        sport_data['record'] = sport_data['record'].apply(lambda x: sum(list(map(int, x.split('-')))))
+        sport_data['event_created_at'] = sport_data['event_created_at'].apply(lambda x: (x + datetime.timedelta(hours=3)).date())
+        sport_data = sport_data[sport_data['event_created_at'] >= current_monday]
+        if sport_data['record'].sum() == 0:
+            continue
+        users = {i:0 for i in sport_data[sport_data['sport_title'] == sport_title]['user_name'].unique()}
+        current_week = {current_monday + datetime.timedelta(days=i):users.copy() for i in range(0, 7)}
+        for date, date_data in sport_data.groupby('event_created_at'):
+            for user_name, user_name_data in date_data.groupby('user_name'):
+                current_week[date][user_name] = user_name_data['record'].sum()
+        result = {'name': [], 'date': [], 'sum': []}
+        for date, values in current_week.items():
+            for name, sum_ in values.items():
+                result['name'].append(name)
+                result['date'].append(date.strftime('%d-%m-%y'))
+                result['sum'].append(sum_)
+        sports[sport_title] = pd.DataFrame(result)
+    return sports

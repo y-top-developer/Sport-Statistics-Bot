@@ -52,4 +52,16 @@ class Event(Base):
         return f'<Event {self.id} ({self.record})>'
 
 
+class Chat(Base):
+    __tablename__ = 'chat'
+
+    id = Column(Integer, primary_key=True)
+    chat_id = Column(Integer)
+    scheduled = Column(Boolean)
+    created_at = Column(DateTime, server_default=func.now())
+
+    def __repr__(self):
+        return f'<Event {self.id} ({self.record})>'
+
+
 Base.metadata.create_all(engine)

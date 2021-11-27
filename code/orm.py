@@ -1,8 +1,9 @@
 import datetime
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.functions import user
 
-from models import Event, Sport, User
+from models import Event, Sport, User, Chat
 
 
 def get_user(session: Session, telegram_id: int, chat_id: int) -> User:
@@ -21,11 +22,10 @@ def get_user(session: Session, telegram_id: int, chat_id: int) -> User:
 def get_sport(session: Session, title: str, chat_id: int) -> Sport:
     return (
         session.query(
-            Sport
+            Chat
         )
         .filter(
-            Sport.title == title,
-            Sport.chat_id == chat_id
+            Chat.chat_id == chat_id,
         )
         .first()
     )
@@ -75,6 +75,50 @@ def get_events_by_sport(session: Session, sport: Sport) -> List:
         .all()
     )
 
+def get_all_scheduled_chats(session: Session) -> List:
+    return (
+        session.query(
+            Chat.chat_id
+        )
+        .filter(
+            Chat.scheduled == True
+        )
+        .all()
+    )
+
+def get_chat(session: Session, chat_id: str) -> Chat:
+    return (
+        session.query(
+            Chat.chat_id
+        )
+        .filter(
+            Chat.scheduled == True
+        )
+        .all()
+    )
+
+def get_all_by_last_30_days(session: Session, chat_id: str) -> List:
+    return (
+        session.query(
+            User.username,
+            Sport.title,
+            Event.created_at,
+            Event.record
+        )
+        .filter(
+            User.chat_id ==  chat_id, 
+            Event.created_at >= datetime.datetime.now() - datetime.timedelta(days=30)
+        )
+        .join(
+            User,
+            User.id == Event.user_id
+        )
+        .join(
+            Sport,
+            Sport.id == Event.sport_id
+        )
+        .all()
+    )
 
 def create_user(session: Session, user: User) -> User:
     existing_user = get_user(session, user.telegram_id, user.chat_id)
@@ -95,6 +139,9 @@ def create_sport(session: Session, sport: Sport) -> Sport:
 
     return get_sport(session, sport.title, sport.chat_id)
 
+def create_chat(session: Session, chat: Chat):
+    session.add(chat)
+    session.commit()
 
 def add_event(session: Session, event: Event) -> Event:
     existing_user = (
