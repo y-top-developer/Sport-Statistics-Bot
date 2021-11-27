@@ -268,7 +268,15 @@ def all_stats_schedule():
             all_stats(str(chat[0]))
         except:
             try:
-                bot.send_message(str(chat[0]), '[-] Can\'t send week statistics')
+                if datetime.date.today().weekday() == 0:
+                    sports = get_sports(session, str(chat[0]))
+                    if sports:
+                        sports = '\n'.join(['Congratulations on Monday, it\'s time to train. Choose any sport or create new one\n'] + [f'- {i[0]}' for i in sports])
+                        bot.send_message(str(chat[0]), sports)
+                    else:
+                        bot.send_message(str(chat[0]), 'Congratulations on Monday, it\'s time to train. Create a sport')
+                else:
+                    bot.send_message(str(chat[0]), '[-] Can\'t send week statistics')
             except Exception as e:
                 print(e)
             
