@@ -208,6 +208,7 @@ def remove_chat_wrapper(message):
 
     if not get_chat(session, message.chat.id):
         bot.send_message(message.chat.id, f'[-] Сhat was not scheduled')
+        return
     remove_chat(session, message.chat.id)
     if get_chat(session, message.chat.id):
         bot.send_message(message.chat.id, f'[-] Сhat not deleted')
