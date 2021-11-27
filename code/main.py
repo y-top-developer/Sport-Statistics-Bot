@@ -181,7 +181,7 @@ def all_stats(message_chat_id):
             for name, date, sum_ in result.values:
                 plt.annotate(sum_, (date, sum_))
             plt.legend()
-            filename = f'plot_{i}.png'
+            filename = f'plot_{i}_{message_chat_id}.png'
             files.append(filename)
             plt.savefig(filename)
             plt.clf()
