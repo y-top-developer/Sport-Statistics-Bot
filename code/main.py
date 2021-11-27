@@ -118,20 +118,20 @@ def add_event_(message):
     
     if set(events_.user_name) == set(events_.loc[events_['event_created_at'] == datetime.datetime.now().date()].user_name) and len(set(events_.user_name)) > 3:
         result_df = events_to_df(events)
-
-        plt.figure(figsize=(20, 10))
-        plt.title(sport_name)
-        sns.set_theme(style="darkgrid")
-        sns.lineplot(x="date", y="sum", hue="name", data=result_df)
-        for name, date, sum_ in result_df.values:
-            plt.annotate(sum_, (date, sum_))
-        plt.legend()
-        plt.savefig('plot_name.png')
-        bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
-        os.remove('plot_name.png')
-        plt.clf()
-        plt.cla()
-        plt.close()
+        with mutex:
+            plt.figure(figsize=(20, 10))
+            plt.title(sport_name)
+            sns.set_theme(style="darkgrid")
+            sns.lineplot(x="date", y="sum", hue="name", data=result_df)
+            for name, date, sum_ in result_df.values:
+                plt.annotate(sum_, (date, sum_))
+            plt.legend()
+            plt.savefig('plot_name.png')
+            bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
+            os.remove('plot_name.png')
+            plt.clf()
+            plt.cla()
+            plt.close()
 
 
 @bot.message_handler(commands=['stats'])
