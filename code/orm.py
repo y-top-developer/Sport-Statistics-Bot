@@ -22,10 +22,10 @@ def get_user(session: Session, telegram_id: int, chat_id: int) -> User:
 def get_sport(session: Session, title: str, chat_id: int) -> Sport:
     return (
         session.query(
-            Chat
+            Sport
         )
         .filter(
-            Chat.chat_id == chat_id,
+            Sport.chat_id == chat_id,
         )
         .first()
     )
