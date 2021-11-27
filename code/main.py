@@ -12,7 +12,7 @@ from threading import Thread
 import matplotlib.pyplot as plt
 
 from models import Chat, Event, Sport, new_session, User
-from orm import get_chat, create_sport, get_sport, get_all_scheduled_chats, add_event, get_events_by_sport, get_sports, create_chat
+from orm import remove_chat, get_chat, create_sport, get_sport, get_all_scheduled_chats, add_event, get_events_by_sport, get_sports, create_chat
 from messages import create_user, events_to_df, get_all_stats
 from settings import TELEGRAM_TOKEN, RECORD_FORMAT
 
@@ -29,6 +29,7 @@ def help_(message):
 I\'m a bot that allows you to track sports achievements in the chat
 
 /reg_chat - add chat to scheduler [admin only/private chat]
+/remove_chat - remove chat from scheduler [admin only/private chat]
 /reg_sport sport_name - add new sport [admin only/private chat]
 /add sport_name record - add new entry for existing sport
 /stats sport_name - get a plot for the last 4 days
@@ -196,6 +197,22 @@ def all_stats(message_chat_id):
 def all_stats_wrapper(message):
     all_stats(message.chat.id)
 
+@bot.message_handler(commands=['remove_chat'])
+def remove_chat_wrapper(message):
+    user = create_user(session, message)
+    user_info = bot.get_chat_member(message.chat.id, message.from_user.id)
+    if (not user or not (user.is_admin or user_info.status in ['creator', 'administrator'])):
+        bot.send_message(
+            message.chat.id, f'[-] {message.from_user.username} is not in the sudoers file. This incident will be reported')
+        return
+
+    if not get_chat(session, message.chat.id):
+        bot.send_message(message.chat.id, f'[-] Сhat was not scheduled')
+    remove_chat(session, message.chat.id)
+    if get_chat(session, message.chat.id):
+        bot.send_message(message.chat.id, f'[-] Сhat not deleted')
+    else:
+        bot.send_message(message.chat.id, f'[+] Сhat deleted')
 
 @bot.message_handler(commands=['reg_chat'])
 def register_chat(message):

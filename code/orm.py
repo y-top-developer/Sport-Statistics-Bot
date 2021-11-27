@@ -1,6 +1,7 @@
 import datetime
 from typing import List
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import delete
 from sqlalchemy.sql.functions import user
 
 from models import Event, Sport, User, Chat
@@ -18,6 +19,15 @@ def get_user(session: Session, telegram_id: int, chat_id: int) -> User:
         .first()
     )
 
+def remove_chat(session: Session,chat_id: int):
+    (session.query(
+            Chat.chat_id
+        )
+        .filter(
+            Chat.chat_id == chat_id
+        )
+        .delete())
+    session.commit()
 
 def get_sport(session: Session, title: str, chat_id: int) -> Sport:
     return (
