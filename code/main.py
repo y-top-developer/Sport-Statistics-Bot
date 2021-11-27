@@ -18,8 +18,6 @@ from settings import TELEGRAM_TOKEN, RECORD_FORMAT
 
 matplotlib.pyplot.switch_backend('Agg')
 
-mutex = Lock()
-
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 session = new_session()
 re_record = re.compile(RECORD_FORMAT)
