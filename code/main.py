@@ -254,6 +254,6 @@ def all_stats_schedule():
         all_stats(str(chat[0]))
 
 if __name__ == "__main__":
-    schedule.every().minutes.do(all_stats_schedule)
+    schedule.every().day.at('10:00').do(all_stats_schedule)
     Thread(target=schedule_checker).start() 
     bot.polling()
