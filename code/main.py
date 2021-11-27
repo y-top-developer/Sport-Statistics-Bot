@@ -10,7 +10,7 @@ import seaborn as sns
 from time import sleep
 from threading import Thread
 import matplotlib.pyplot as plt
-
+from multiprocessing import Process, Lock
 
 from models import Chat, Event, Sport, new_session, User
 from orm import get_chat, create_sport, get_sport, get_all_scheduled_chats, add_event, get_events_by_sport, get_sports, create_chat
@@ -18,6 +18,8 @@ from messages import create_user, events_to_df, get_all_stats
 from settings import TELEGRAM_TOKEN, RECORD_FORMAT
 
 matplotlib.pyplot.switch_backend('Agg')
+
+mutex = Lock()
 
 bot = telebot.TeleBot(TELEGRAM_TOKEN)
 session = new_session()
@@ -171,25 +173,26 @@ def stats(message):
 
 def all_stats(message_chat_id):
     try:
-        sports = get_all_stats(session, message_chat_id)
-        files = []
-        for i, (sport_title, result) in enumerate(sports.items()):
-            plt.figure(figsize=(20, 10))
-            plt.title(sport_title)
-            sns.set_theme(style="darkgrid")
-            sns.lineplot(x="date", y="sum", hue="name", data=result)
-            for name, date, sum_ in result.values:
-                plt.annotate(sum_, (date, sum_))
-            plt.legend()
-            filename = f'plot_{i}_{message_chat_id}.png'
-            files.append(filename)
-            plt.savefig(filename)
-            plt.clf()
-            plt.cla()
-            plt.close()
-        bot.send_media_group(message_chat_id, [telebot.types.InputMediaPhoto(open(photo, 'rb')) for photo in files])
-        for filename in files:
-            os.remove(filename)
+        with mutex:
+            sports = get_all_stats(session, message_chat_id)
+            files = []
+            for i, (sport_title, result) in enumerate(sports.items()):
+                plt.figure(figsize=(20, 10))
+                plt.title(sport_title)
+                sns.set_theme(style="darkgrid")
+                sns.lineplot(x="date", y="sum", hue="name", data=result)
+                for name, date, sum_ in result.values:
+                    plt.annotate(sum_, (date, sum_))
+                plt.legend()
+                filename = f'plot_{i}_{message_chat_id}.png'
+                files.append(filename)
+                plt.savefig(filename)
+                plt.clf()
+                plt.cla()
+                plt.close()
+            bot.send_media_group(message_chat_id, [telebot.types.InputMediaPhoto(open(photo, 'rb')) for photo in files])
+            for filename in files:
+                os.remove(filename)
     except Exception as e:
         bot.send_message(message_chat_id, f'[-] Can\'t get statistics')
         print(e)
