@@ -10,7 +10,6 @@ import seaborn as sns
 from time import sleep
 from threading import Thread
 import matplotlib.pyplot as plt
-from multiprocessing import Process, Lock
 
 from models import Chat, Event, Sport, new_session, User
 from orm import get_chat, create_sport, get_sport, get_all_scheduled_chats, add_event, get_events_by_sport, get_sports, create_chat
@@ -118,20 +117,19 @@ def add_event_(message):
     
     if set(events_.user_name) == set(events_.loc[events_['event_created_at'] == datetime.datetime.now().date()].user_name) and len(set(events_.user_name)) > 3:
         result_df = events_to_df(events)
-        with mutex:
-            plt.figure(figsize=(20, 10))
-            plt.title(sport_name)
-            sns.set_theme(style="darkgrid")
-            sns.lineplot(x="date", y="sum", hue="name", data=result_df)
-            for name, date, sum_ in result_df.values:
-                plt.annotate(sum_, (date, sum_))
-            plt.legend()
-            plt.savefig('plot_name.png')
-            bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
-            os.remove('plot_name.png')
-            plt.clf()
-            plt.cla()
-            plt.close()
+        plt.figure(figsize=(20, 10))
+        plt.title(sport_name)
+        sns.set_theme(style="darkgrid")
+        sns.lineplot(x="date", y="sum", hue="name", data=result_df)
+        for name, date, sum_ in result_df.values:
+            plt.annotate(sum_, (date, sum_))
+        plt.legend()
+        plt.savefig('plot_name.png')
+        bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
+        os.remove('plot_name.png')
+        plt.clf()
+        plt.cla()
+        plt.close()
 
 
 @bot.message_handler(commands=['stats'])
@@ -156,43 +154,42 @@ def stats(message):
         return
 
     result_df = events_to_df(events)
-    with mutex:
-        plt.figure(figsize=(20, 10))
-        plt.title(sport_name)
-        sns.set_theme(style="darkgrid")
-        sns.lineplot(x="date", y="sum", hue="name", data=result_df)
-        for name, date, sum_ in result_df.values:
-            plt.annotate(sum_, (date, sum_))
-        plt.legend()
-        plt.savefig('plot_name.png')
-        bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
-        os.remove('plot_name.png')
-        plt.clf()
-        plt.cla()
-        plt.close()
+    plt.figure(figsize=(20, 10))
+    plt.title(sport_name)
+    sns.set_theme(style="darkgrid")
+    sns.lineplot(x="date", y="sum", hue="name", data=result_df)
+    for name, date, sum_ in result_df.values:
+        plt.annotate(sum_, (date, sum_))
+    plt.legend()
+    plt.savefig('plot_name.png')
+    bot.send_photo(message.chat.id, photo=open('plot_name.png', 'rb'))
+    os.remove('plot_name.png')
+    plt.clf()
+    plt.cla()
+    plt.close()
 
 def all_stats(message_chat_id):
     try:
-        with mutex:
-            sports = get_all_stats(session, message_chat_id)
-            files = []
-            for i, (sport_title, result) in enumerate(sports.items()):
-                plt.figure(figsize=(20, 10))
-                plt.title(sport_title)
-                sns.set_theme(style="darkgrid")
-                sns.lineplot(x="date", y="sum", hue="name", data=result)
-                for name, date, sum_ in result.values:
-                    plt.annotate(sum_, (date, sum_))
-                plt.legend()
-                filename = f'plot_{i}_{message_chat_id}.png'
-                files.append(filename)
-                plt.savefig(filename)
-                plt.clf()
-                plt.cla()
-                plt.close()
-            bot.send_media_group(message_chat_id, [telebot.types.InputMediaPhoto(open(photo, 'rb')) for photo in files])
-            for filename in files:
-                os.remove(filename)
+        sports = get_all_stats(session, message_chat_id)
+        files = []
+        for i, (sport_title, result) in enumerate(sports.items()):
+            plt = plt.copy
+            plt.figure(figsize=(20, 10))
+            plt.title(sport_title)
+            sns.set_theme(style="darkgrid")
+            sns.lineplot(x="date", y="sum", hue="name", data=result)
+            for name, date, sum_ in result.values:
+                plt.annotate(sum_, (date, sum_))
+            plt.legend()
+            filename = f'plot_{i}_{message_chat_id}.png'
+            files.append(filename)
+            plt.savefig(filename)
+            plt.clf()
+            plt.cla()
+            plt.close()
+        bot.send_media_group(message_chat_id, [telebot.types.InputMediaPhoto(open(photo, 'rb')) for photo in files])
+        for filename in files:
+            os.remove(filename)
     except Exception as e:
         bot.send_message(message_chat_id, f'[-] Can\'t get statistics')
         print(e)
