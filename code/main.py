@@ -249,7 +249,11 @@ def all_stats_schedule():
             bot.send_message(str(chat[0]), random.choice(quotes))
             all_stats(str(chat[0]))
         except:
-            bot.send_message('[-] Can\'t send week statistics')
+            try:
+                bot.send_message(str(chat[0]), '[-] Can\'t send week statistics')
+            except Exception as e:
+                print(e)
+            
 
 if __name__ == "__main__":
     schedule.every().day.at('10:00').do(all_stats_schedule)
