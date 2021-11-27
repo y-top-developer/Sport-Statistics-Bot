@@ -20,9 +20,7 @@ def get_user(session: Session, telegram_id: int, chat_id: int) -> User:
     )
 
 def remove_chat(session: Session,chat_id: int):
-    (session.query(
-            Chat.chat_id
-        )
+    (session.query
         .filter(
             Chat.chat_id == chat_id
         )
