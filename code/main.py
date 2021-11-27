@@ -190,8 +190,9 @@ def all_stats(message_chat_id):
         bot.send_media_group(message_chat_id, [telebot.types.InputMediaPhoto(open(photo, 'rb')) for photo in files])
         for filename in files:
             os.remove(filename)
-    except:
+    except Exception as e:
         bot.send_message(message_chat_id, f'[-] Can\'t get statistics')
+        print(e)
 
 
 @bot.message_handler(commands=['all_stats'])
