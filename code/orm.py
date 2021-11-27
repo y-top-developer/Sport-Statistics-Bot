@@ -25,6 +25,7 @@ def get_sport(session: Session, title: str, chat_id: int) -> Sport:
             Sport
         )
         .filter(
+            Sport.title == title,
             Sport.chat_id == chat_id,
         )
         .first()
