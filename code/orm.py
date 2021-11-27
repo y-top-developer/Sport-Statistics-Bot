@@ -19,12 +19,9 @@ def get_user(session: Session, telegram_id: int, chat_id: int) -> User:
         .first()
     )
 
-def remove_chat(session: Session,chat_id: int):
-    (session.query
-        .filter(
-            Chat.chat_id == chat_id
-        )
-        .delete())
+def remove_chat(session: Session, chat_id: int):
+    sql_query = delete(Chat).where(Chat.id == chat_id)
+    session.execute(sql_query)
     session.commit()
 
 def get_sport(session: Session, title: str, chat_id: int) -> Sport:
