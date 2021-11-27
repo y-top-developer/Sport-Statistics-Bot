@@ -248,8 +248,11 @@ def all_stats_schedule():
 
     ]
     for chat in get_all_scheduled_chats(session):
-        bot.send_message(str(chat[0]), random.choice(quotes))
-        all_stats(str(chat[0]))
+        try:
+            bot.send_message(str(chat[0]), random.choice(quotes))
+            all_stats(str(chat[0]))
+        except:
+            bot.send_message('[-] Can\'t send week statistics')
 
 if __name__ == "__main__":
     schedule.every().day.at('10:00').do(all_stats_schedule)
