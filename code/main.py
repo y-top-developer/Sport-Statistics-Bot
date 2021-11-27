@@ -171,7 +171,6 @@ def all_stats(message_chat_id):
         sports = get_all_stats(session, message_chat_id)
         files = []
         for i, (sport_title, result) in enumerate(sports.items()):
-            plt = plt.copy
             plt.figure(figsize=(20, 10))
             plt.title(sport_title)
             sns.set_theme(style="darkgrid")
