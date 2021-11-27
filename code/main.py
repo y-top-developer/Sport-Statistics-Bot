@@ -199,7 +199,6 @@ def all_stats_wrapper(message):
 
 @bot.message_handler(commands=['reg_chat'])
 def register_chat(message):
-    print(get_all_scheduled_chats(session))
     message_text = message.text.split()[1:]
 
     if len(message_text) != 0:
