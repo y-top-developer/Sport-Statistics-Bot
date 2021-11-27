@@ -92,7 +92,7 @@ def get_chat(session: Session, chat_id: str) -> Chat:
             Chat.chat_id
         )
         .filter(
-            Chat.scheduled == True
+            Chat.chat_id == chat_id
         )
         .all()
     )
