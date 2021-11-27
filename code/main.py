@@ -205,9 +205,7 @@ def register_chat(message):
     message_text = message.text.split()[1:]
 
     if len(message_text) != 0:
-        bot.s
-        
-        end_message(message.chat.id, '[-] /reg_chat')
+        bot.send_message(message.chat.id, '[-] /reg_chat')
         return
 
     user = create_user(session, message)
