@@ -29,8 +29,8 @@ def help_(message):
     bot.send_message(message.chat.id, '''Hi, glad to see you!) 
 I\'m a bot that allows you to track sports achievements in the chat
 
+/reg_chat - add chat to scheduler [admin only/private chat]
 /reg_sport sport_name - add new sport [admin only/private chat]
-/reg_sport sport_name - add chat to scheduler [admin only/private chat]
 /add sport_name record - add new entry for existing sport
 /stats sport_name - get a plot for the last 4 days
 /all_stats - get plots with sport results for the current week
