@@ -247,7 +247,6 @@ def schedule_checker():
         schedule.run_pending()
         sleep(1)
 
-@bot.message_handler(commands=['all_stats_schedule'])
 def all_stats_schedule():
     quotes = [
         'When you’re riding, only the race in which you’re riding is important🐺',
