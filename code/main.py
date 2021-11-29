@@ -247,6 +247,7 @@ def schedule_checker():
         schedule.run_pending()
         sleep(1)
 
+@bot.message_handler(commands=['all_stats_schedule'])
 def all_stats_schedule():
     quotes = [
         'When you’re riding, only the race in which you’re riding is important🐺',
@@ -264,24 +265,23 @@ def all_stats_schedule():
     ]
     for chat in get_all_scheduled_chats(session):
         try:
+            if datetime.date.today().weekday() == 0:
+                sports = get_sports(session, str(chat[0]))
+                if sports:
+                    sports = '\n'.join(['Congratulations on Monday, it\'s time to train. Choose any sport or create new one\n'] + [f'- {i[0]}' for i in sports])
+                    bot.send_message(str(chat[0]), sports)
+                else:
+                    bot.send_message(str(chat[0]), 'Congratulations on Monday, it\'s time to train. Create a sport')
             bot.send_message(str(chat[0]), random.choice(quotes))
             all_stats(str(chat[0]))
         except:
             try:
-                if datetime.date.today().weekday() == 0:
-                    sports = get_sports(session, str(chat[0]))
-                    if sports:
-                        sports = '\n'.join(['Congratulations on Monday, it\'s time to train. Choose any sport or create new one\n'] + [f'- {i[0]}' for i in sports])
-                        bot.send_message(str(chat[0]), sports)
-                    else:
-                        bot.send_message(str(chat[0]), 'Congratulations on Monday, it\'s time to train. Create a sport')
-                else:
-                    bot.send_message(str(chat[0]), '[-] Can\'t send week statistics')
+                bot.send_message(str(chat[0]), '[-] Can\'t send week statistics')
             except Exception as e:
                 print(e)
             
 
 if __name__ == "__main__":
-    schedule.every().day.at('10:00').do(all_stats_schedule)
+    schedule.every().day.at('12:00').do(all_stats_schedule)
     Thread(target=schedule_checker).start() 
     bot.polling()
