@@ -243,9 +243,12 @@ def register_chat(message):
     
 
 def schedule_checker():
-    while True:
-        schedule.run_pending()
-        sleep(1)
+    try:
+        while True:
+            schedule.run_pending()
+            sleep(1)
+    except Exception as e: 
+        print(e)
 
 def all_stats_schedule():
     quotes = [
