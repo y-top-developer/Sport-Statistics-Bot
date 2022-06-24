@@ -286,4 +286,4 @@ def all_stats_schedule():
 if __name__ == "__main__":
     schedule.every().day.at('12:00').do(all_stats_schedule)
     Thread(target=schedule_checker).start() 
-    bot.polling()
+    bot.infinity_polling()
